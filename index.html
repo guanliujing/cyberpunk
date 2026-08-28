@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="ZHANG SHENGYIN // NEURAL SPACE — Personal Digital Terminal">
+<title>ZHANG SHENGYIN // NEURAL SPACE</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ===== 背景粒子场 ===== -->
+<canvas id="particles" aria-hidden="true"></canvas>
+<div id="cursor-glow" aria-hidden="true"></div>
+
+<!-- ===== 启动界面 ===== -->
+<div id="boot-screen" role="dialog" aria-label="System boot">
+  <div class="boot-inner">
+    <p class="boot-line" id="boot-1">INITIALIZING SYSTEM...</p>
+    <div class="boot-bar"><i id="boot-fill"></i><span class="boot-pct" id="boot-pct">0%</span></div>
+    <p class="boot-line" id="boot-2">NEURAL NETWORK ONLINE</p>
+    <p class="boot-line" id="boot-3">SPACE INTERFACE ONLINE</p>
+    <p class="boot-line" id="boot-4">WELCOME, VISITOR.</p>
+    <button id="enter-btn" class="btn-enter" type="button" tabindex="0">[ ENTER SYSTEM ]</button>
+  </div>
+</div>
+
+<!-- ===== 主页面 ===== -->
+<main id="page" class="page-hidden">
+
+  <!-- 顶部状态条 -->
+  <header class="statusbar">
+    <span class="sb-left">NEURAL&nbsp;SPACE&nbsp;//&nbsp;v0.1</span>
+    <span class="sb-right">STATUS&nbsp;//&nbsp;<em class="ok">ONLINE</em></span>
+  </header>
+
+  <!-- Hero -->
+  <section id="hero" class="section hero">
+    <p class="hero-kicker">// IDENTITY NODE //</p>
+    <h1 class="hero-name" data-text="ZHANG SHENGYIN">ZHANG&nbsp;SHENGYIN</h1>
+    <p class="hero-alias">观流景</p>
+    <p class="hero-quote">「正在现实世界中进行自我迭代。<br>
+      目标不是成为未来的人，而是成为定义未来的人。」</p>
+    <p class="hero-status"><span class="dot"></span> STATUS&nbsp;//&nbsp;ONLINE</p>
+  </section>
+
+  <!-- 个人档案 -->
+  <section id="database" class="section">
+    <h2 class="sec-title">PERSONNEL DATABASE</h2>
+    <div class="hud-panel tilt" data-tilt>
+      <div class="hud-row"><span class="k">ID</span><span class="v">ZSY-001</span></div>
+      <div class="hud-row"><span class="k">NAME</span><span class="v">ZHANG SHENGYIN</span></div>
+      <div class="hud-row"><span class="k">STATUS</span><span class="v">STUDENT</span></div>
+      <div class="hud-row"><span class="k">AFFILIATION</span><span class="v">观流景</span></div>
+      <div class="hud-row"><span class="k">CURRENT OBJECTIVE</span><span class="v">SELF EVOLUTION</span></div>
+      <div class="hud-row"><span class="k">SYSTEM STATUS</span><span class="v"><span class="dot"></span> ONLINE</span></div>
+    </div>
+  </section>
+
+  <!-- 个人简介 -->
+  <section id="intro" class="section">
+    <h2 class="sec-title">PERSONAL INTRODUCTION</h2>
+    <div class="intro-card tilt" data-tilt>
+      <p class="intro-line">正在现实世界中进行自我迭代。</p>
+      <p class="intro-line">目标不是成为未来的人，</p>
+      <p class="intro-line strong">而是成为定义未来的人。</p>
+      <div class="intro-scan" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <!-- 当前任务 -->
+  <section id="mission" class="section">
+    <h2 class="sec-title">CURRENT MISSION</h2>
+    <div class="mission-panel tilt" data-tilt>
+      <p class="mission-label">MISSION // <span class="ok">ACTIVE</span></p>
+      <p class="mission-name">WEIGHT CUTTING</p>
+      <p class="mission-zh">「减肥中」</p>
+      <div class="discipline">
+        <span class="d-label">DISCIPLINE</span>
+        <span class="d-bar" aria-hidden="true">████████████████</span>
+        <span class="d-state ok">ACTIVE</span>
+      </div>
+      <p class="mission-note">// 无进度数据 · 仅记录状态 //</p>
+    </div>
+  </section>
+
+  <!-- 联系 -->
+  <section id="contact" class="section">
+    <h2 class="sec-title">COMMUNICATION CHANNEL</h2>
+    <div class="comm-panel tilt" data-tilt>
+      <p class="comm-secure">SECURE CHANNEL // <span class="ok">AVAILABLE</span></p>
+      <p class="comm-mail">3320209171@qq.com</p>
+      <a class="btn-comm" href="mailto:3320209171@qq.com">[ ESTABLISH CONNECTION ]</a>
+    </div>
+  </section>
+
+  <!-- 页脚 + 隐藏彩蛋触发 -->
+  <footer class="footer">
+    <p>© 2026 ZHANG SHENGYIN · NEURAL SPACE</p>
+    <p class="secret-trigger" id="secret-trigger" title="">[ SYSTEM ]</p>
+  </footer>
+
+</main>
+
+<!-- ===== 彩蛋覆盖层 ===== -->
+<div id="secret-overlay" aria-hidden="true">
+  <pre>████████████████████
+
+      SECRET MODE
+        UNLOCKED
+
+      ZSY // ???
+
+「你居然真的点了。」
+
+████████████████████</pre>
+</div>
+
+<script src="js/particles.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
