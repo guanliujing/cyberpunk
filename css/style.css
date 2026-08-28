@@ -1,0 +1,802 @@
+/* ==========================================================================
+   ZHANG SHENGYIN // NEURAL SPACE — css/style.css
+   --------------------------------------------------------------------------
+   深空蓝克制风格 · 高级感 > 特效数量 · 零外部依赖 · 纯原生 CSS
+   主色：#04070d 深空黑 / 冰蓝 #a3c9e8 / 淡青 #84d6cf（禁用紫/粉/红/高饱和霓虹）
+
+   ── 与 js/main.js 的协作契约（2026-08 与 js-engineer 对齐，双方遵守）──
+     body.js-anim          main.js 在页面就绪后添加 → 启用滚动显现（未加则全部可见）
+     .section.is-visible   IntersectionObserver 为每个 .section 添加 → 触发显现
+     .statusbar.is-visible 状态条同规则（ENTER 进入主页后再开始显现更佳）
+     #page.page-hidden     HTML 初始类；JS 在 ENTER 时移除 → 主页展开（.page-visible 可选）
+     #boot-screen.ready    启动进度完成 → 显示 [ ENTER SYSTEM ] 按钮（JS 也可内联显隐）
+     #boot-screen.done     点击 ENTER 后添加 → 启动界面淡出
+     .boot-line.on         逐行点亮启动文案（boot-1 ~ boot-4，JS 也可内联显隐）
+     #boot-fill            宽度由 JS 设置 style.width 或 CSS 变量 --pct
+     .tilt --rx / --ry      JS 按鼠标位置设置倾斜角度（deg，±6°），pointerleave 置 0deg
+     #cursor-glow --gx/--gy JS 设置光标位置（px），CSS calc 自动居中（--tilt-x/--tilt-y 为兼容别名）
+     body.touch-device     JS 在触屏设备添加 → 隐藏光标光晕
+     body.secret-scan      SECRET MODE 触发时短暂全页扫描线（可选，JS 也可自建元素）
+     #secret-overlay.show  SECRET MODE 显示彩蛋覆盖层（.active 为同义别名）
+     body.secret-active / body.booted  可选钩子（无强制样式）
+   ========================================================================== */
+
+/* ==========================================================================
+   01 · 设计令牌（Design Tokens）
+   ========================================================================== */
+:root {
+  /* 色彩 — 深空蓝克制体系 */
+  --bg: #04070d;                  /* 极深黑 / 深空蓝底 */
+  --bg-soft: #060b14;             /* 略亮的深空蓝 */
+  --ice: #a3c9e8;                 /* 冰蓝（主强调色） */
+  --ice-bright: #e8f4ff;          /* 冰蓝高光 */
+  --cyan: #84d6cf;                /* 淡青（点缀色，仅状态点/少量强调） */
+  --text: #d5e6f5;                /* 主文字（冷白偏蓝，可读优先） */
+  --text-strong: #f0f8ff;         /* 强调文字 */
+  --dim: #7f9bb8;                 /* 次级文字 */
+  --faint: rgba(150, 195, 235, 0.38);  /* 弱化文字 */
+  --line: rgba(130, 190, 235, 0.16);   /* 边框线 */
+  --line-bright: rgba(165, 215, 250, 0.42); /* 悬浮/强调边框 */
+  --glow: rgba(130, 200, 255, 0.5);     /* 发光色 */
+  --panel-bg: linear-gradient(180deg, rgba(10, 18, 32, 0.72), rgba(6, 11, 20, 0.62));
+
+  /* 字体（系统栈，零外部依赖） */
+  --font-mono: "Cascadia Code", "JetBrains Mono", Consolas, "SF Mono", Menlo,
+               "Courier New", monospace;
+  --font-cn: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+             "Noto Sans SC", "Source Han Sans SC", sans-serif;
+
+  /* 动效 */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-slow: 0.7s;
+  --dur-med: 0.45s;
+}
+
+/* ==========================================================================
+   02 · 基础重置 / 全局
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  overflow-x: clip;               /* 手机端杜绝横向滚动（clip 不破坏 sticky） */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  font-family: var(--font-cn);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+  background:
+    radial-gradient(ellipse 90% 55% at 50% -12%, rgba(22, 56, 104, 0.28), transparent 62%),
+    radial-gradient(ellipse 70% 45% at 50% 115%, rgba(10, 30, 58, 0.30), transparent 60%),
+    var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
+}
+
+/* 极淡网格纹理（点缀级，非霓虹） */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(120, 180, 235, 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 180, 235, 0.028) 1px, transparent 1px);
+  background-size: 48px 48px;
+  -webkit-mask-image: radial-gradient(ellipse 95% 72% at 50% 0%, #000 18%, transparent 78%);
+  mask-image: radial-gradient(ellipse 95% 72% at 50% 0%, #000 18%, transparent 78%);
+}
+
+::selection { background: rgba(140, 205, 255, 0.26); color: var(--text-strong); }
+
+:focus-visible { outline: 1px solid var(--ice); outline-offset: 3px; }
+
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+a { color: inherit; text-decoration: none; }
+em { font-style: normal; }
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(130, 190, 235, 0.18); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(130, 190, 235, 0.32); }
+
+/* ==========================================================================
+   03 · 背景层：粒子画布 + 光标光晕
+   ========================================================================== */
+#particles {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* 跟随鼠标的淡蓝光晕（极淡）。
+   定位：main.js 设置 CSS 变量 --gx / --gy（px，视口坐标），
+   下方 calc 以元素尺寸居中；无 JS 时兜底居中于视口。 */
+#cursor-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  width: 480px;
+  height: 480px;
+  border-radius: 50%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background: radial-gradient(
+    circle,
+    rgba(120, 190, 240, 0.075) 0%,
+    rgba(120, 190, 240, 0.03) 32%,
+    transparent 64%
+  );
+  transform: translate(
+    calc(var(--gx, 50vw) - 50%),
+    calc(var(--gy, 50vh) - 50%)
+  );
+  will-change: transform;
+}
+
+/* ==========================================================================
+   04 · 启动界面（BOOT SCREEN）
+   ========================================================================== */
+#boot-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse 60% 42% at 50% 42%, rgba(28, 62, 106, 0.20), transparent 65%),
+    var(--bg);
+  transition: opacity var(--dur-slow) ease, visibility var(--dur-slow) ease;
+}
+#boot-screen.done {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.boot-inner { width: min(340px, 86vw); }
+
+.boot-line {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  color: var(--faint);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.5s ease, transform 0.5s ease, color 0.5s ease,
+              text-shadow 0.5s ease;
+}
+.boot-line.on {
+  opacity: 1;
+  transform: none;
+  color: var(--ice);
+  text-shadow: 0 0 14px rgba(130, 200, 255, 0.28);
+}
+
+.boot-bar {
+  position: relative;
+  height: 3px;
+  margin: 20px 0 26px;
+  background: rgba(130, 190, 235, 0.14);
+}
+#boot-fill {
+  display: block;
+  height: 100%;
+  width: var(--pct, 0%);
+  background: linear-gradient(90deg, rgba(120, 190, 240, 0.35), var(--ice));
+  box-shadow: 0 0 10px rgba(140, 210, 255, 0.45);
+  /* 无 transition：main.js 已用 2200ms easeInOutCubic 逐帧驱动
+     style.width，CSS 再插值会导致进度条滞后于百分比文本 */
+}
+.boot-pct {
+  position: absolute;
+  top: -20px;
+  right: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--dim);
+}
+
+/* [ ENTER SYSTEM ] 按钮：进度完成后由 .ready 显示 */
+#enter-btn {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.6s ease 0.15s, visibility 0s linear 0.75s;
+}
+#boot-screen.ready #enter-btn {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.6s ease 0.15s, visibility 0s linear 0s;
+}
+
+/* ==========================================================================
+   05 · 顶部状态条
+   ========================================================================== */
+.statusbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 24px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--dim);
+  background: rgba(4, 7, 13, 0.72);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.sb-right .ok { color: var(--ice); }
+
+/* ==========================================================================
+   06 · 页面主体 / 通用区块
+   ========================================================================== */
+#page {
+  position: relative;
+  z-index: 1;
+  transition: opacity var(--dur-slow) ease 0.05s;
+}
+.page-hidden { opacity: 0; visibility: hidden; }
+.page-visible { opacity: 1; visibility: visible; }
+
+.section {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 84px 24px;
+  /* 滚动显现（约定见文件头）：
+     未启用 JS 或未添加 .js-anim 时，页面完全可见（安全降级） */
+  transition: opacity var(--dur-slow) ease,
+              transform var(--dur-slow) var(--ease-out);
+}
+/* 滚动显现：仅当 JS 已激活（body.js-anim）才默认隐藏；
+   .is-visible 由 IntersectionObserver 添加。默认隐藏必有对应显示规则。 */
+body.js-anim .statusbar,
+body.js-anim .section {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity var(--dur-slow) ease,
+              transform var(--dur-slow) var(--ease-out);
+}
+body.js-anim .statusbar.is-visible,
+body.js-anim .section.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+.sec-title {
+  margin-bottom: 36px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.34em;
+  color: var(--ice);
+  text-transform: uppercase;
+}
+.sec-title::before {
+  content: "";
+  display: inline-block;
+  width: 30px;
+  height: 1px;
+  margin-right: 14px;
+  vertical-align: middle;
+  background: linear-gradient(90deg, transparent, var(--ice));
+  opacity: 0.7;
+}
+
+/* ==========================================================================
+   07 · Hero
+   ========================================================================== */
+.hero {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-top: 110px;
+  padding-bottom: 110px;
+}
+
+.hero-kicker {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.44em;
+  color: var(--dim);
+  margin-bottom: 30px;
+}
+
+.hero-name {
+  position: relative;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: clamp(2.4rem, 8.5vw, 6rem);
+  line-height: 1.1;
+  letter-spacing: 0.12em;
+  color: var(--text);
+  text-transform: uppercase;
+}
+/* 渐隐文字 + 极轻扫描光带（不支持的浏览器回退为纯色文字） */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .hero-name {
+    color: transparent;
+    background: linear-gradient(180deg, #f2f9ff 0%, #bcdcf4 46%, #6f9cc0 80%, #4a7095 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    filter: drop-shadow(0 0 22px rgba(120, 185, 235, 0.20));
+  }
+  /* 扫过名字的淡蓝光带（data-text 副本，clip 至文字） */
+  .hero-name::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    color: transparent;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      transparent 46%,
+      rgba(198, 232, 255, 0.55) 50%,
+      transparent 54%,
+      transparent 100%
+    );
+    background-size: 100% 240%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: heroScan 8s ease-in-out 1.4s infinite;
+  }
+}
+@keyframes heroScan {
+  0%   { background-position: 0 100%; }
+  52%  { background-position: 0 0%; }
+  100% { background-position: 0 0%; }
+}
+
+.hero-alias {
+  margin-top: 20px;
+  margin-right: -0.6em;           /* 抵消字距造成的视觉偏移 */
+  font-family: var(--font-cn);
+  font-size: 20px;
+  letter-spacing: 0.6em;
+  color: var(--ice);
+  text-shadow: 0 0 16px rgba(140, 205, 255, 0.30);
+}
+
+.hero-quote {
+  max-width: 660px;
+  margin-top: 30px;
+  font-family: var(--font-cn);
+  font-size: 16px;
+  line-height: 2;
+  color: #9db8d2;
+}
+
+.hero-status {
+  margin-top: 38px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: var(--dim);
+}
+
+/* ==========================================================================
+   08 · HUD 面板通用（边框 / 角标 / 3D Tilt 基础 / 悬浮高光）
+   ========================================================================== */
+.hud-panel, .intro-card, .mission-panel, .comm-panel {
+  position: relative;
+  padding: 30px 34px;
+  background: var(--panel-bg);
+  border: 1px solid var(--line);
+  box-shadow:
+    0 14px 36px -22px rgba(50, 100, 160, 0.50),
+    inset 0 0 18px rgba(120, 190, 240, 0.03);
+}
+/* HUD 角标：左上 + 右下 */
+.hud-panel::before, .intro-card::before, .mission-panel::before, .comm-panel::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 14px;
+  height: 14px;
+  border-top: 1px solid rgba(170, 218, 255, 0.55);
+  border-left: 1px solid rgba(170, 218, 255, 0.55);
+}
+.hud-panel::after, .intro-card::after, .mission-panel::after, .comm-panel::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 14px;
+  height: 14px;
+  border-right: 1px solid rgba(170, 218, 255, 0.55);
+  border-bottom: 1px solid rgba(170, 218, 255, 0.55);
+}
+
+/* 3D Tilt：main.js 按鼠标位置设置 CSS 变量 --rx / --ry（deg，±6°），
+   pointerleave 置 0deg；下方 transform 规则应用 perspective 并平滑恢复。
+   触屏由下方 media 降级为 none。 */
+.tilt {
+  transform: perspective(1000px)
+             rotateX(var(--rx, var(--tilt-x, 0deg)))
+             rotateY(var(--ry, var(--tilt-y, 0deg)));
+  transition: transform var(--dur-med) var(--ease-out),
+              border-color 0.3s ease, box-shadow 0.3s ease;
+  will-change: transform;
+}
+@media (hover: hover) {
+  .tilt:hover {
+    border-color: var(--line-bright);
+    box-shadow:
+      0 18px 42px -18px rgba(60, 110, 170, 0.55),
+      0 0 26px rgba(120, 190, 240, 0.10),
+      inset 0 0 22px rgba(120, 190, 240, 0.05);
+  }
+}
+
+/* ==========================================================================
+   09 · Personnel Database
+   ========================================================================== */
+.hud-panel { max-width: 780px; margin: 0 auto; }
+.hud-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 13px 2px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  letter-spacing: 0.12em;
+  border-bottom: 1px solid rgba(130, 190, 235, 0.09);
+}
+.hud-row:last-child { border-bottom: none; }
+.hud-row .k { flex-shrink: 0; color: rgba(150, 200, 240, 0.50); }
+.hud-row .v { text-align: right; color: var(--text); }
+
+/* ==========================================================================
+   10 · Personal Introduction（扫描线点缀）
+   ========================================================================== */
+.intro-card { max-width: 780px; margin: 0 auto; padding: 42px 46px; overflow: hidden; }
+.intro-line {
+  font-family: var(--font-cn);
+  font-size: 19px;
+  line-height: 2;
+  color: #c6d9ea;
+}
+.intro-line.strong {
+  font-size: 21px;
+  letter-spacing: 0.08em;
+  color: var(--text-strong);
+  text-shadow: 0 0 18px rgba(140, 205, 255, 0.25);
+}
+/* 极淡的纵向扫描线，周期移动（点缀） */
+.intro-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 64px;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(140, 205, 255, 0.05), transparent);
+  animation: introScan 9s linear infinite;
+}
+@keyframes introScan {
+  0%   { top: -25%; }
+  100% { top: 120%; }
+}
+
+/* ==========================================================================
+   11 · Current Mission（DISCIPLINE 为静态块，非进度条）
+   ========================================================================== */
+.mission-panel { max-width: 660px; margin: 0 auto; }
+.mission-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  color: var(--dim);
+  margin-bottom: 20px;
+}
+.mission-name {
+  font-family: var(--font-mono);
+  font-size: 27px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  color: var(--text);
+}
+.mission-zh {
+  margin-top: 12px;
+  font-family: var(--font-cn);
+  font-size: 15px;
+  letter-spacing: 0.2em;
+  color: var(--dim);
+}
+.discipline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 28px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.d-label { letter-spacing: 0.3em; color: var(--dim); }
+.d-bar {
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: 2px;
+  color: rgba(140, 205, 245, 0.55);   /* 纯静态块，绝不做宽度动画 */
+}
+.d-state.ok { letter-spacing: 0.24em; color: var(--ice); }
+.mission-note {
+  margin-top: 24px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: rgba(150, 195, 235, 0.38);
+}
+
+/* ==========================================================================
+   12 · Communication Channel
+   ========================================================================== */
+.comm-panel { max-width: 660px; margin: 0 auto; }
+.comm-secure {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  color: var(--dim);
+  margin-bottom: 18px;
+}
+.comm-mail {
+  display: block;
+  margin-bottom: 26px;
+  font-family: var(--font-mono);
+  font-size: 17px;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  word-break: break-all;
+}
+
+/* ==========================================================================
+   13 · 科技按钮（启动 + 通信，共享样式）
+   ========================================================================== */
+.btn-enter, .btn-comm {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  padding: 13px 26px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid rgba(140, 200, 245, 0.35);
+  cursor: pointer;
+  transition: color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease,
+              letter-spacing 0.3s ease, background-color 0.3s ease;
+}
+.btn-enter { padding: 15px 36px; font-size: 14px; }
+.btn-comm { text-align: center; }
+
+@media (hover: hover) {
+  .btn-enter:hover, .btn-comm:hover {
+    color: var(--text-strong);
+    border-color: rgba(170, 220, 255, 0.8);
+    background: rgba(120, 190, 240, 0.05);
+    letter-spacing: 0.2em;
+    box-shadow: 0 0 18px rgba(130, 200, 255, 0.22),
+                inset 0 0 12px rgba(130, 200, 255, 0.08);
+  }
+  /* 蓝色扫描线：hover 时自上而下扫过一次 */
+  .btn-enter::before, .btn-comm::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    opacity: 0;
+    background: linear-gradient(90deg, transparent, rgba(140, 210, 255, 0.9), transparent);
+    pointer-events: none;
+  }
+  .btn-enter:hover::before, .btn-comm:hover::before {
+    opacity: 1;
+    animation: btnSweep 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+@keyframes btnSweep {
+  0%   { top: 0; opacity: 1; }
+  100% { top: calc(100% - 2px); opacity: 0; }
+}
+
+/* ==========================================================================
+   14 · 状态点 / OK 标记
+   ========================================================================== */
+.ok { color: var(--ice); }
+.dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  border-radius: 50%;
+  vertical-align: middle;
+  background: var(--cyan);
+  box-shadow: 0 0 8px rgba(120, 220, 215, 0.8);
+  animation: dotPulse 2.6s ease-in-out infinite;
+}
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.75; transform: scale(0.86); }
+}
+
+/* ==========================================================================
+   15 · 页脚 + 隐藏彩蛋触发器
+   ========================================================================== */
+.footer {
+  padding: 30px 24px 38px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--faint);
+  border-top: 1px solid var(--line);
+}
+.footer p { margin: 6px 0; }
+
+.secret-trigger {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: rgba(150, 195, 235, 0.26);   /* 不明显，符合彩蛋要求 */
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+.secret-trigger:hover {
+  color: rgba(170, 215, 250, 0.6);
+  text-shadow: 0 0 10px rgba(140, 205, 255, 0.35);
+}
+
+/* ==========================================================================
+   16 · SECRET MODE 彩蛋覆盖层
+   ========================================================================== */
+#secret-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(4, 7, 13, 0.94);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+#secret-overlay.show,
+#secret-overlay.active { opacity: 1; visibility: visible; }
+#secret-overlay pre {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 2;
+  letter-spacing: 0.18em;
+  text-align: center;
+  white-space: pre-wrap;
+  color: var(--ice);
+  text-shadow: 0 0 14px rgba(130, 200, 255, 0.35);
+  animation: secretFlicker 2.6s ease-in-out infinite;
+}
+@keyframes secretFlicker {
+  0%, 91%, 94%, 97%, 100% { opacity: 1; }
+  92% { opacity: 0.55; }
+  95% { opacity: 0.7; }
+}
+
+/* 触发瞬间的全页扫描线（body.secret-scan 由 main.js 短暂添加） */
+body.secret-scan::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 95;
+  height: 90px;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(150, 215, 255, 0.12), transparent);
+  animation: secretSweep 0.9s ease-out forwards;
+}
+@keyframes secretSweep {
+  from { transform: translateY(-15vh); }
+  to   { transform: translateY(115vh); }
+}
+
+/* ==========================================================================
+   17 · 响应式
+   ========================================================================== */
+@media (max-width: 860px) {
+  .section { padding: 64px 20px; }
+  .hud-panel, .mission-panel, .comm-panel { padding: 24px 22px; }
+  .intro-card { padding: 32px 26px; }
+  .statusbar { padding: 10px 16px; font-size: 10px; }
+}
+
+@media (max-width: 600px) {
+  .hero { padding-top: 72px; padding-bottom: 72px; }
+  .hero-name { letter-spacing: 0.08em; }
+  .hero-quote { font-size: 15px; }
+  .hero-alias { font-size: 17px; letter-spacing: 0.5em; margin-right: -0.5em; }
+
+  .hud-row { flex-direction: column; gap: 5px; padding: 11px 0; }
+  .hud-row .v { text-align: left; }
+
+  .intro-line { font-size: 17px; }
+  .intro-line.strong { font-size: 18px; }
+
+  .mission-name { font-size: 21px; }
+  .comm-mail { font-size: 15px; }
+
+  /* 按钮通栏，避免过小误触 */
+  .btn-enter { width: 100%; text-align: center; }
+  .btn-comm { width: 100%; }
+
+  .sec-title { letter-spacing: 0.26em; }
+  .statusbar .sb-left { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+@media (max-width: 420px) {
+  .hero-kicker { letter-spacing: 0.32em; font-size: 11px; }
+  .hero-name { letter-spacing: 0.05em; }
+  .hero-status { letter-spacing: 0.22em; }
+  .section { padding: 52px 16px; }
+}
+
+/* ==========================================================================
+   18 · 触屏降级（性能 + 交互合理性）
+   ========================================================================== */
+@media (hover: none), (pointer: coarse) {
+  /* 无鼠标：去掉光标光晕与 3D Tilt，避免无意义开销 */
+  #cursor-glow { display: none; }
+  .tilt { transform: none !important; }
+  .statusbar, .hud-panel, .intro-card, .mission-panel, .comm-panel {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+/* JS 检测到触屏时给 body 添加 .touch-device（与上方 media 等效的兜底） */
+body.touch-device #cursor-glow { display: none; }
+
+/* ==========================================================================
+   19 · prefers-reduced-motion：用户要求减少动态时全部收敛
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  #cursor-glow { display: none; }
+  .hero-name::after { display: none; }
+  .intro-scan { display: none; }
+  /* 滚动显现降级为直接可见 */
+  body.js-anim .statusbar,
+  body.js-anim .section { opacity: 1 !important; transform: none !important; }
+}
