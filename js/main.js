@@ -245,4 +245,28 @@
   }
 
   if (enterBtn) enterBtn.addEventListener('click', enterSystem);
+
+  /* ================= 小猪彩蛋：页脚电子小猪图标 1.2s 内连击 5 次 → GIF 弹出，6s 后自动消失 ================= */
+  (function () {
+    var pigTrigger = document.getElementById('pig-trigger');
+    var pigOverlay = document.getElementById('pig-overlay');
+    if (!pigTrigger || !pigOverlay) return;
+    var clicks = 0, lastT = 0, hideTimer = null;
+    pigTrigger.addEventListener('click', function () {
+      var now = Date.now();
+      if (now - lastT > 1200) clicks = 0;   // 超 1.2s 未连击则重置
+      lastT = now;
+      clicks++;
+      if (clicks >= 5) {
+        clicks = 0;
+        pigOverlay.classList.add('show');
+        pigOverlay.setAttribute('aria-hidden', 'false');
+        if (hideTimer) clearTimeout(hideTimer);
+        hideTimer = setTimeout(function () {
+          pigOverlay.classList.remove('show');
+          pigOverlay.setAttribute('aria-hidden', 'true');
+        }, 6000);
+      }
+    });
+  })();
 })();
