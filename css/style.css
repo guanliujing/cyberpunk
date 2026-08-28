@@ -800,3 +800,44 @@ body.touch-device #cursor-glow { display: none; }
   body.js-anim .statusbar,
   body.js-anim .section { opacity: 1 !important; transform: none !important; }
 }
+
+/* ==========================================================================
+   20 小猪彩蛋（电子小猪触发图标 + GIF 覆盖层）
+   ========================================================================== */
+/* --- 页脚电子小猪触发图标：低透明，hover 提亮 --- */
+.pig-trigger{
+  display:inline-flex; align-items:center; justify-content:center;
+  margin:10px auto 0; opacity:.18; cursor:pointer;
+  transition:opacity .3s, transform .3s; outline:none; -webkit-tap-highlight-color:transparent;
+}
+.pig-trigger:hover{opacity:.75; transform:translateY(-1px)}
+.pig-trigger svg{display:block}
+/* 像素猪配色（冷色调，贴合页面；非粉/红） */
+.pg{fill:#a3c9e8}
+.pg-d{fill:#2b4a63}
+.pg-s{fill:#cfe9f7}
+
+/* --- GIF 彩蛋覆盖层：默认隐藏，.show 淡入 --- */
+#pig-overlay{
+  position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center;
+  pointer-events:none; opacity:0; transition:opacity .35s ease;
+}
+#pig-overlay.show{opacity:1}
+/* 小猪蛋：GIF + 文字，轻微上下漂浮 */
+.pig-egg{
+  text-align:center; filter:drop-shadow(0 0 18px rgba(120,190,255,.25));
+  animation:pig-float 1.6s ease-in-out infinite;
+}
+.pig-gif{
+  display:block; width:min(200px,42vw); border-radius:6px;
+  border:1px solid rgba(120,190,255,.4); box-shadow:0 0 24px rgba(120,190,255,.25);
+  background:#04070d;
+}
+.pig-cap{
+  margin-top:10px; font-family:var(--mono); font-size:12px; letter-spacing:2px;
+  color:#a3c9e8; text-shadow:0 0 8px rgba(120,190,255,.5);
+}
+@keyframes pig-float{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-8px)}
+}
